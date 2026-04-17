@@ -13,10 +13,14 @@ const {
 const authMiddleware = require('../middlewares/auth.middleware');
 const roleMiddleware = require('../middlewares/role.middleware');
 
-router.post('/', authMiddleware, createOrder);
+// ✅ Pedido público, sin login
+router.post('/', createOrder);
+
+// 🔒 Estas sí pueden seguir privadas si querés mantenerlas
 router.get('/my-orders', authMiddleware, getMyOrders);
 router.get('/:id', authMiddleware, getOrderById);
 
+// 🔒 Admin
 router.get('/', authMiddleware, roleMiddleware('admin'), getOrders);
 router.patch('/:id/status', authMiddleware, roleMiddleware('admin'), updateOrderStatus);
 router.delete('/:id', authMiddleware, roleMiddleware('admin'), deleteOrder);

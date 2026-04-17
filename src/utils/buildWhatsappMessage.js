@@ -4,6 +4,7 @@ const buildWhatsappMessage = ({
   customerPhone,
   address,
   notes,
+  shippingMethod,
   items,
   total,
   alias
@@ -12,6 +13,8 @@ const buildWhatsappMessage = ({
     const number = Number(value) || 0;
     return `$${number.toLocaleString('es-AR')}`;
   };
+
+
 
   let message = `¡Hola! Quiero confirmar el siguiente pedido:\n\n`;
 
@@ -45,6 +48,9 @@ const buildWhatsappMessage = ({
 
   if (address) {
     message += `Dirección: ${address}\n`;
+  }
+    if (shippingMethod) {
+    message += `Método de envío: ${shippingMethod}\n`;
   }
 
   if (notes) {

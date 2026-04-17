@@ -8,7 +8,14 @@ const buildWhatsappMessage = require('../utils/buildWhatsappMessage');
  */
 const createOrder = async (req, res) => {
   try {
-    const { customerName, customerPhone, address, notes, items } = req.body;
+    const {
+      customerName,
+      customerPhone,
+      address,
+      notes,
+      shippingMethod,
+      items
+    } = req.body;
 
     if (!customerName || !customerName.trim()) {
       return res.status(400).json({
@@ -93,6 +100,7 @@ const createOrder = async (req, res) => {
       customerPhone: customerPhone ? customerPhone.trim() : '',
       address: address ? address.trim() : '',
       notes: notes ? notes.trim() : '',
+      shippingMethod: shippingMethod ? shippingMethod.trim() : 'A coordinar',
       items: processedItems,
       total,
       alias,
@@ -105,6 +113,7 @@ const createOrder = async (req, res) => {
       customerPhone: order.customerPhone,
       address: order.address,
       notes: order.notes,
+      shippingMethod: order.shippingMethod,
       items: order.items,
       total: order.total,
       alias: order.alias
@@ -126,7 +135,6 @@ const createOrder = async (req, res) => {
     });
   }
 };
-
 /**
  * GET /api/orders
  * Listar todos los pedidos

@@ -1,5 +1,6 @@
 const Product = require('../models/Product');
 const Category = require('../models/Category');
+const uploadBufferToCloudinary = require('../utils/uploadToCloudinary');
 
 /**
  * POST /api/products
@@ -7,6 +8,12 @@ const Category = require('../models/Category');
  */
 const createProduct = async (req, res) => {
   try {
+    console.log('=== CREATE PRODUCT DEBUG ===');
+    console.log('headers content-type:', req.headers['content-type']);
+    console.log('body:', req.body);
+    console.log('file exists?', !!req.file);
+    console.log('file:', req.file);
+
     const {
       name,
       description,
@@ -18,50 +25,21 @@ const createProduct = async (req, res) => {
     } = req.body || {};
 
     if (!name || !name.trim()) {
-      return res.status(400).json({
-        ok: false,
-        message: 'El nombre del producto es obligatorio'
-      });
+      return res.status(400).json({ ok: false, message: 'El nombre del producto es obligatorio' });
     }
 
-    if (price === undefined || price === null || isNaN(Number(price))) {
-      return res.status(400).json({
-        ok: false,
-        message: 'El precio es obligatorio y debe ser numérico'
+    let image = '';
+
+    if (req.file?.buffer) {
+      console.log('buffer length:', req.file.buffer.length);
+
+      const uploaded = await uploadBufferToCloudinary(req.file.buffer, {
+        public_id: `product-${Date.now()}`
       });
+
+      console.log('cloudinary secure_url:', uploaded.secure_url);
+      image = uploaded.secure_url;
     }
-
-    if (stock === undefined || stock === null || isNaN(Number(stock))) {
-      return res.status(400).json({
-        ok: false,
-        message: 'El stock es obligatorio y debe ser numérico'
-      });
-    }
-
-    if (!category) {
-      return res.status(400).json({
-        ok: false,
-        message: 'La categoría es obligatoria'
-      });
-    }
-
-    const existingCategory = await Category.findById(category);
-
-    if (!existingCategory) {
-      return res.status(404).json({
-        ok: false,
-        message: 'La categoría seleccionada no existe'
-      });
-    }
-
-    if (!existingCategory.active) {
-      return res.status(400).json({
-        ok: false,
-        message: 'La categoría seleccionada está inactiva'
-      });
-    }
-
-    const image = req.file ? `/uploads/${req.file.filename}` : '';
 
     const product = await Product.create({
       name: name.trim(),
@@ -74,12 +52,10 @@ const createProduct = async (req, res) => {
       featured: featured !== undefined ? featured === 'true' || featured === true : false
     });
 
-    const populatedProduct = await Product.findById(product._id).populate('category');
-
     return res.status(201).json({
       ok: true,
       message: 'Producto creado correctamente',
-      product: populatedProduct
+      product
     });
   } catch (error) {
     console.error('Error en createProduct:', error);
@@ -271,8 +247,12 @@ const updateProduct = async (req, res) => {
       product.featured = featured === 'true' || featured === true;
     }
 
-    if (req.file) {
-      product.image = `/uploads/${req.file.filename}`;
+    if (req.file?.buffer) {
+      const uploaded = await uploadBufferToCloudinary(req.file.buffer, {
+        public_id: `product-${Date.now()}`
+      });
+
+      product.image = uploaded.secure_url;
     }
 
     await product.save();

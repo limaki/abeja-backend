@@ -62,6 +62,11 @@ const orderSchema = new mongoose.Schema(
       default: '',
       trim: true
     },
+    shippingMethod: {
+      type: String,
+      default: 'A coordinar',
+      trim: true
+    },
     items: {
       type: [orderItemSchema],
       required: true
